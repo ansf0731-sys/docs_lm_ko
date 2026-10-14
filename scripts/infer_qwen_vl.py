@@ -14,7 +14,7 @@ messages = [{
     "role": "user",
     "content": [
         {"type": "image", "image": img, "min_pixels": 256*28*28, "max_pixels": 1024*28*28},
-        {{"type": "text", "text": "이 페이지에 표가 있으면 표의 열 이름과 각 행의 값을 한국어로 정리해 주세요. 표가 없으면 없다고 답하세요."}}
+        {"type": "text", "text": "이 페이지에 표가 있으면 표의 열 이름과 각 행의 값을 한국어로 정리해 주세요. 표가 없으면 없다고 답하세요."}
     ]
 }]
 
@@ -27,3 +27,13 @@ print("image_grid_thw:", inputs.get("image_grid_thw"))
 out = model.generate(**inputs, max_new_tokens=256)
 gen = out[0][inputs.input_ids.shape[1]:]
 print(processor.decode(gen, skip_special_tokens=True))
+import torch
+
+with torch.no_grad():
+    out = model.generate(**inputs, max_new_tokens=256, output_scores=True, return_dict_in_generate=True)
+
+scores = out.scores
+probs = [torch.softmax(s[0], dim=-1) for s in scores]
+entropies = [-(p * torch.log(p + 1e-8)).sum().item() for p in probs]
+avg_entropy = sum(entropies) / len(entropies)
+print("avg_entropy:", round(avg_entropy, 4))
