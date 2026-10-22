@@ -1,4 +1,8 @@
-data/ 
-outputs/ 
-__pycache__/ 
-*.pyc 
+__pycache__/
+*.pyc
+outputs/pages/*.png
+outputs/evidence/*.png
+*.pptx
+*.docx
+checkpoints/
+*.bin

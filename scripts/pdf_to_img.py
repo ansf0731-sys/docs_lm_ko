@@ -1,8 +1,8 @@
 import fitz
 import os
 
-PDF = r"C:\Users\AN-SF\docs_lm_ko\data\raw\test.pdf"
-OUT = r"C:\Users\AN-SF\docs_lm_ko\outputs\pages"
+PDF = r"F:\BS\docs_lm_ko\data\raw\test.pdf"
+OUT = r"F:\BS\docs_lm_ko\outputs\pages"
 os.makedirs(OUT, exist_ok=True)
 
 doc = fitz.open(PDF)

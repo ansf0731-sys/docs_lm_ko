@@ -3,7 +3,7 @@ from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
 
 model_id = "Qwen/Qwen2-VL-2B-Instruct"
-img = r"C:\Users\AN-SF\docs_lm_ko\outputs\pages\page1.png"
+img = r"F:\BS\docs_lm_ko\outputs\pages\page1.png"
 
 processor = AutoProcessor.from_pretrained(model_id)
 model = Qwen2VLForConditionalGeneration.from_pretrained(
@@ -30,10 +30,19 @@ print(processor.decode(gen, skip_special_tokens=True))
 import torch
 
 with torch.no_grad():
-    out = model.generate(**inputs, max_new_tokens=256, output_scores=True, return_dict_in_generate=True)
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=256,
+        output_logits=True,  # 关键！必须加上这行才能拿到 logits
+        return_dict_in_generate=True
+    )
 
-scores = out.scores
-probs = [torch.softmax(s[0], dim=-1) for s in scores]
-entropies = [-(p * torch.log(p + 1e-8)).sum().item() for p in probs]
-avg_entropy = sum(entropies) / len(entropies)
-print("avg_entropy:", round(avg_entropy, 4))
+logits = outputs.logits[1:]  # 跳过 prompt，取生成部分的 logits
+probs = [torch.softmax(logits[i][0], dim=-1) for i in range(len(logits))]
+entropies = [-(p * torch.log(p + 1e-9)).sum().item() for p in probs]
+
+if entropies:
+    avg_entropy = sum(entropies) / len(entropies)
+    print("avg_entropy:", round(avg_entropy, 4))
+else:
+    print("avg_entropy: None (未生成任何 tokens)")
